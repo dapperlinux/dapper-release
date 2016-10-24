@@ -1,4 +1,4 @@
-%global release_name "Twenty Four"
+%global release_name Panda
 %global dist_version 24
 
 Summary:        Dapper Linux release files
@@ -63,7 +63,7 @@ ln -s fedora-release %{buildroot}/etc/system-release
 mkdir -p %{buildroot}/usr/lib/systemd/system-preset/
 
 cat << EOF >>%{buildroot}/usr/lib/os-release
-NAME=Dapper Linux
+NAME="Dapper Linux"
 VERSION="%{version} (%{release_name})"
 ID=dapper
 ID_LIKE=fedora
@@ -71,6 +71,7 @@ VERSION_ID=%{version}
 PRETTY_NAME="Dapper Linux %{version} (%{release_name})"
 ANSI_COLOR="0;34"
 CPE_NAME="cpe:/o:dapperlinux:dapperlinux:%{version}"
+HOME_URL="https://dapperlinux.com"
 EOF
 # Create the symlink for /etc/os-release
 ln -s ../usr/lib/os-release %{buildroot}/etc/os-release
