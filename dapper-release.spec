@@ -1,10 +1,10 @@
 %global release_name Panda
-%global dist_version 24
+%global dist_version 25
 
 Summary:        Dapper Linux release files
 Name:           dapper-release
-Version:        24
-Release:        2
+Version:        25
+Release:        1
 License:        MIT
 Group:	        System Environment/Base
 Source0:        LICENSE
@@ -116,6 +116,9 @@ rm -rf %{buildroot}
 %doc README.Dapper-Release-Notes
 
 %changelog
+* Fri Nov  4 2016 Matthew Ruffell <msr50@uclive.ac.nz> - 25-1
+- Dapper Linux Release 25
+
 * Fri Oct  7 2016 Matthew Ruffell <msr50@uclive.ac.nz> - 24-2
 - Dapper Linux Release 24
 
