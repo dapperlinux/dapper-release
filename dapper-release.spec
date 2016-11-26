@@ -4,7 +4,7 @@
 Summary:        Dapper Linux release files
 Name:           dapper-release
 Version:        25
-Release:        1
+Release:        2
 License:        MIT
 Group:	        System Environment/Base
 Source0:        LICENSE
@@ -14,19 +14,22 @@ Source3:        README.license
 Source4:        85-display-manager.preset
 Source5:        90-default.preset
 Source6:        99-default-disable.preset
+Source7:        80-workstation.preset
 Obsoletes:      redhat-release
 Provides:       redhat-release
 Provides:       system-release
 Provides:       system-release(%{version})
 # Comment this next Requires out if we're building for a non-rawhide target
 # Requires:       fedora-repos-rawhide
-Requires:       fedora-repos(%{version})
+Requires:       dapper-repos(%{version})
 Obsoletes:      generic-release-rawhide <= 21-5
 Obsoletes:      generic-release-cloud <= 23-0.4
 Obsoletes:      generic-release-server <= 23-0.4
 Obsoletes:      generic-release-workstation <= 23-0.4
 BuildArch:      noarch
 Conflicts:      fedora-release
+Provides:       fedora-release 
+Provides:       fedora-release(%{version})
 
 %description
 Dapper Linux release files such as dnf configs and various /etc/ files that
@@ -43,9 +46,26 @@ Conflicts:	fedora-release-notes
 Dapper Linux release notes package.
 
 
+%package workstation
+Summary:        Base package for Dapper Linux Workstation-specific default configurations
+Provides:       system-release-workstation
+Provides:       system-release-workstation(%{version})
+Provides:       system-release-product
+Requires:       dapper-release
+# needed for captive portal support
+Requires:       NetworkManager-config-connectivity-fedora
+# Replace fedora's packages
+Provides:       fedora-release-workstation
+Obsoletes:      fedora-release-workstation
+
+
+%description workstation
+Provides a base package for Dapper Linux Workstation-specific configuration files to
+depend on.
+
 %prep
 %setup -c -T
-cp -a %{SOURCE0} %{SOURCE1} %{SOURCE2} %{SOURCE3} %{SOURCE4} %{SOURCE5} %{SOURCE6} .
+cp -a %{SOURCE0} %{SOURCE1} %{SOURCE2} %{SOURCE3} %{SOURCE4} %{SOURCE5} %{SOURCE6} %{SOURCE7} .
 
 %build
 
@@ -76,6 +96,23 @@ EOF
 # Create the symlink for /etc/os-release
 ln -s ../usr/lib/os-release %{buildroot}/etc/os-release
 
+install -d $RPM_BUILD_ROOT/usr/lib/os.release.d/
+cat << EOF >>$RPM_BUILD_ROOT/usr/lib/os.release.d/os-release-fedora
+NAME="Dapper Linux"
+VERSION="%{version} (%{release_name})"
+ID=dapper
+ID_LIKE=fedora
+VERSION_ID=%{version}
+PRETTY_NAME="Dapper Linux %{version} (%{release_name})"
+ANSI_COLOR="0;34"
+CPE_NAME="cpe:/o:dapperlinux:dapperlinux:%{version}"
+HOME_URL="https://dapperlinux.com"
+EOF
+
+# Setup the workstation symlink
+cp -p $RPM_BUILD_ROOT/usr/lib/os.release.d/os-release-fedora \
+$RPM_BUILD_ROOT/usr/lib/os.release.d/os-release-workstation
+
 # Set up the dist tag macros
 install -d -m 755 %{buildroot}%{_rpmconfigdir}/macros.d
 cat >> %{buildroot}%{_rpmconfigdir}/macros.d/macros.dist << EOF
@@ -91,6 +128,8 @@ EOF
 install -m 0644 85-display-manager.preset %{buildroot}%{_prefix}/lib/systemd/system-preset/
 install -m 0644 90-default.preset %{buildroot}%{_prefix}/lib/systemd/system-preset/
 install -m 0644 99-default-disable.preset %{buildroot}%{_prefix}/lib/systemd/system-preset/
+# Fedora Workstation
+install -m 0644 80-workstation.preset %{buildroot}%{_prefix}/lib/systemd/system-preset/
 
 %clean
 rm -rf %{buildroot}
@@ -98,6 +137,7 @@ rm -rf %{buildroot}
 %files
 %defattr(-,root,root,-)
 %license LICENSE README.license
+%config %attr(0644,root,root) /usr/lib/os.release.d/os-release-fedora
 %config %attr(0644,root,root) /usr/lib/os-release
 /etc/os-release
 %config %attr(0644,root,root) /etc/fedora-release
@@ -111,11 +151,18 @@ rm -rf %{buildroot}
 %{_prefix}/lib/systemd/system-preset/90-default.preset
 %{_prefix}/lib/systemd/system-preset/99-default-disable.preset
 
+%files workstation
+%config %attr(0644,root,root) /usr/lib/os.release.d/os-release-workstation
+%{_prefix}/lib/systemd/system-preset/80-workstation.preset
+
 %files notes
 %defattr(-,root,root,-)
 %doc README.Dapper-Release-Notes
 
 %changelog
+* Sat Nov 26 2016 Matthew Ruffell <msr50@uclive.ac.nz> - 25-2
+- Adding new workstation package
+
 * Fri Nov  4 2016 Matthew Ruffell <msr50@uclive.ac.nz> - 25-1
 - Dapper Linux Release 25
 
