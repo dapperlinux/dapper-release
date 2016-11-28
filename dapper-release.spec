@@ -4,7 +4,7 @@
 Summary:        Dapper Linux release files
 Name:           dapper-release
 Version:        25
-Release:        3
+Release:        4
 License:        MIT
 Group:	        System Environment/Base
 Source0:        LICENSE
@@ -27,8 +27,8 @@ Obsoletes:      generic-release-cloud
 Obsoletes:      generic-release-server
 Obsoletes:      generic-release-workstation
 BuildArch:      noarch
-Conflicts:      fedora-release
-Provides:       fedora-release 
+Obsoletes:      fedora-release
+Provides:       fedora-release = %{version}-%{release}
 Provides:       fedora-release(%{version})
 
 %description
