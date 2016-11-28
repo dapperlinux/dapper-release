@@ -4,7 +4,7 @@
 Summary:        Dapper Linux release files
 Name:           dapper-release
 Version:        25
-Release:        2
+Release:        3
 License:        MIT
 Group:	        System Environment/Base
 Source0:        LICENSE
@@ -22,10 +22,10 @@ Provides:       system-release(%{version})
 # Comment this next Requires out if we're building for a non-rawhide target
 # Requires:       fedora-repos-rawhide
 Requires:       dapper-repos(%{version})
-Obsoletes:      generic-release-rawhide <= 21-5
-Obsoletes:      generic-release-cloud <= 23-0.4
-Obsoletes:      generic-release-server <= 23-0.4
-Obsoletes:      generic-release-workstation <= 23-0.4
+Obsoletes:      generic-release-rawhide
+Obsoletes:      generic-release-cloud
+Obsoletes:      generic-release-server
+Obsoletes:      generic-release-workstation
 BuildArch:      noarch
 Conflicts:      fedora-release
 Provides:       fedora-release 
@@ -160,6 +160,9 @@ rm -rf %{buildroot}
 %doc README.Dapper-Release-Notes
 
 %changelog
+* Sat Nov 26 2016 Matthew Ruffell <msr50@uclive.ac.nz> - 25-3
+- Fixing small version problems
+
 * Sat Nov 26 2016 Matthew Ruffell <msr50@uclive.ac.nz> - 25-2
 - Adding new workstation package
 
