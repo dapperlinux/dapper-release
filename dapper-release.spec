@@ -1,20 +1,13 @@
-%global release_name Panda
-%global dist_version 25
+%global release_name Penguin
+%global dist_version 26
 
 Summary:        Dapper Linux release files
 Name:           dapper-release
-Version:        25
-Release:        4
+Version:        26
+Release:        1
 License:        MIT
 Group:	        System Environment/Base
-Source0:        LICENSE
-Source1:        README.developers
-Source2:        README.Dapper-Release-Notes
-Source3:        README.license
-Source4:        85-display-manager.preset
-Source5:        90-default.preset
-Source6:        99-default-disable.preset
-Source7:        80-workstation.preset
+Source0:        %{name}-%{version}.tar.xz
 Obsoletes:      redhat-release
 Provides:       redhat-release
 Provides:       system-release
@@ -63,9 +56,28 @@ Obsoletes:      fedora-release-workstation
 Provides a base package for Dapper Linux Workstation-specific configuration files to
 depend on.
 
+%package server
+Summary:        Base package for Dapper Linux Server-specific default configurations
+Provides:       system-release-server
+Provides:       system-release-server(%{version})
+Provides:       system-release-product
+Requires:       dapper-release
+Requires:       systemd
+Requires:       cockpit-bridge
+Requires:       cockpit-networkmanager
+Requires:       cockpit-shell
+Requires:       cockpit-storaged
+Requires:       cockpit-ws
+Requires:       openssh-server
+Requires:       rolekit
+Requires(post):	systemd
+
+%description server
+Provides a base package for Dapper Linux Server-specific configuration files to
+depend on.
+
 %prep
-%setup -c -T
-cp -a %{SOURCE0} %{SOURCE1} %{SOURCE2} %{SOURCE3} %{SOURCE4} %{SOURCE5} %{SOURCE6} %{SOURCE7} .
+%setup -q
 
 %build
 
@@ -73,10 +85,6 @@ cp -a %{SOURCE0} %{SOURCE1} %{SOURCE2} %{SOURCE3} %{SOURCE4} %{SOURCE5} %{SOURCE
 install -d %{buildroot}/etc
 echo "Dapper Linux release %{version} (%{release_name})" > %{buildroot}/etc/fedora-release
 echo "cpe:/o:dapperlinux:dapperlinux:%{version}" > %{buildroot}/etc/system-release-cpe
-cp -p %{buildroot}/etc/fedora-release %{buildroot}/etc/issue
-echo "Kernel \r on an \m (\l)" >> %{buildroot}/etc/issue
-cp -p %{buildroot}/etc/issue %{buildroot}/etc/issue.net
-echo >> %{buildroot}/etc/issue
 ln -s fedora-release %{buildroot}/etc/redhat-release
 ln -s fedora-release %{buildroot}/etc/system-release
 
@@ -109,9 +117,39 @@ CPE_NAME="cpe:/o:dapperlinux:dapperlinux:%{version}"
 HOME_URL="https://dapperlinux.com"
 EOF
 
-# Setup the workstation symlink
+# Create the common /etc/issue
+echo "\S" > $RPM_BUILD_ROOT/usr/lib/os.release.d/issue-fedora
+echo "Kernel \r on an \m (\l)" >> $RPM_BUILD_ROOT/usr/lib/os.release.d/issue-fedora
+echo >> $RPM_BUILD_ROOT/usr/lib/os.release.d/issue-fedora
+
+# Create /etc/issue.net
+echo "\S" > $RPM_BUILD_ROOT/usr/lib/issue.net
+echo "Kernel \r on an \m (\l)" >> $RPM_BUILD_ROOT/usr/lib/issue.net
+ln -s ../usr/lib/issue.net $RPM_BUILD_ROOT/etc/issue.net
+
+# Workstation
 cp -p $RPM_BUILD_ROOT/usr/lib/os.release.d/os-release-fedora \
-$RPM_BUILD_ROOT/usr/lib/os.release.d/os-release-workstation
+      $RPM_BUILD_ROOT/usr/lib/os.release.d/os-release-workstation
+echo "VARIANT=\"Workstation Edition\"" >> $RPM_BUILD_ROOT/usr/lib/os.release.d/os-release-workstation
+echo "VARIANT_ID=workstation" >> $RPM_BUILD_ROOT/usr/lib/os.release.d/os-release-workstation
+sed -i -e "s|(%{release_name})|(Workstation Edition)|g" $RPM_BUILD_ROOT/usr/lib/os.release.d/os-release-workstation
+
+# Server
+cp -p $RPM_BUILD_ROOT/usr/lib/os.release.d/os-release-fedora \
+      $RPM_BUILD_ROOT/usr/lib/os.release.d/os-release-server
+echo "VARIANT=\"Server Edition\"" >> $RPM_BUILD_ROOT/usr/lib/os.release.d/os-release-server
+echo "VARIANT_ID=server" >> $RPM_BUILD_ROOT/usr/lib/os.release.d/os-release-server
+sed -i -e "s|(%{release_name})|(Server Edition)|g" $RPM_BUILD_ROOT/usr/lib/os.release.d/os-release-server
+
+cp -p $RPM_BUILD_ROOT/usr/lib/os.release.d/issue-fedora \
+      $RPM_BUILD_ROOT/usr/lib/os.release.d/issue-server
+echo "Admin Console: https://\4:9090/ or https://[\6]:9090/" >> $RPM_BUILD_ROOT/usr/lib/os.release.d/issue-server
+echo >> $RPM_BUILD_ROOT/usr/lib/os.release.d/issue-server
+
+# Create the symlink for /etc/issue
+# We don't create the /usr/lib/os-release symlink until %%post
+# so that we can ensure that the right one is referenced.
+ln -s ../usr/lib/issue $RPM_BUILD_ROOT/etc/issue
 
 # Set up the dist tag macros
 install -d -m 755 %{buildroot}%{_rpmconfigdir}/macros.d
@@ -124,12 +162,21 @@ cat >> %{buildroot}%{_rpmconfigdir}/macros.d/macros.dist << EOF
 EOF
 
 # Add presets
+mkdir -p $RPM_BUILD_ROOT/usr/lib/systemd/user-preset/
+mkdir -p $RPM_BUILD_ROOT%{_prefix}/lib/systemd/system-preset/
+mkdir -p $RPM_BUILD_ROOT/usr/lib/os.release.d/presets
+
+
 # Default system wide
-install -m 0644 85-display-manager.preset %{buildroot}%{_prefix}/lib/systemd/system-preset/
-install -m 0644 90-default.preset %{buildroot}%{_prefix}/lib/systemd/system-preset/
-install -m 0644 99-default-disable.preset %{buildroot}%{_prefix}/lib/systemd/system-preset/
+install -m 0644 85-display-manager.preset $RPM_BUILD_ROOT%{_prefix}/lib/systemd/system-preset/
+install -m 0644 90-default.preset $RPM_BUILD_ROOT%{_prefix}/lib/systemd/system-preset/
+install -m 0644 99-default-disable.preset $RPM_BUILD_ROOT%{_prefix}/lib/systemd/system-preset/
+# Fedora Server
+install -m 0644 80-server.preset $RPM_BUILD_ROOT%{_prefix}/lib/os.release.d/presets/
+install -m 0644 80-server.preset $RPM_BUILD_ROOT%{_prefix}/lib/systemd/system-preset/
 # Fedora Workstation
-install -m 0644 80-workstation.preset %{buildroot}%{_prefix}/lib/systemd/system-preset/
+install -m 0644 80-workstation.preset $RPM_BUILD_ROOT%{_prefix}/lib/os.release.d/presets/
+install -m 0644 80-workstation.preset $RPM_BUILD_ROOT%{_prefix}/lib/systemd/system-preset/
 
 %clean
 rm -rf %{buildroot}
@@ -137,6 +184,8 @@ rm -rf %{buildroot}
 %files
 %defattr(-,root,root,-)
 %license LICENSE README.license
+%dir /usr/lib/os.release.d
+%dir /usr/lib/os.release.d/presets
 %config %attr(0644,root,root) /usr/lib/os.release.d/os-release-fedora
 %config %attr(0644,root,root) /usr/lib/os-release
 /etc/os-release
@@ -144,9 +193,13 @@ rm -rf %{buildroot}
 /etc/redhat-release
 /etc/system-release
 %config %attr(0644,root,root) /etc/system-release-cpe
-%config(noreplace) %attr(0644,root,root) /etc/issue
-%config(noreplace) %attr(0644,root,root) /etc/issue.net
+%config %attr(0644,root,root) /usr/lib/os.release.d/issue-fedora
+%config(noreplace) /etc/issue
+%config %attr(0644,root,root) /usr/lib/issue.net
+%config(noreplace) /etc/issue.net
 %attr(0644,root,root) %{_rpmconfigdir}/macros.d/macros.dist
+%dir /usr/lib/systemd/user-preset/
+%dir %{_prefix}/lib/systemd/system-preset/
 %{_prefix}/lib/systemd/system-preset/85-display-manager.preset
 %{_prefix}/lib/systemd/system-preset/90-default.preset
 %{_prefix}/lib/systemd/system-preset/99-default-disable.preset
@@ -154,12 +207,22 @@ rm -rf %{buildroot}
 %files workstation
 %config %attr(0644,root,root) /usr/lib/os.release.d/os-release-workstation
 %{_prefix}/lib/systemd/system-preset/80-workstation.preset
+%config %attr(0644,root,root) /usr/lib/os.release.d/presets/80-workstation.preset
+
+%files server
+%config %attr(0644,root,root) /usr/lib/os.release.d/os-release-server
+%config %attr(0644,root,root) /usr/lib/os.release.d/issue-server
+%{_prefix}/lib/systemd/system-preset/80-server.preset
+%config %attr(0644,root,root) /usr/lib/os.release.d/presets/80-server.preset
 
 %files notes
 %defattr(-,root,root,-)
 %doc README.Dapper-Release-Notes
 
 %changelog
+* Fri Aug 11 2017 Matthew Ruffell <msr50@uclive.ac.nz> - 26-1
+- Dapper Linux 26
+
 * Sat Nov 26 2016 Matthew Ruffell <msr50@uclive.ac.nz> - 25-3
 - Fixing small version problems
 
