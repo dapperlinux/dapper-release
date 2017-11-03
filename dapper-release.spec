@@ -1,10 +1,9 @@
 %global release_name Penguin
-%global dist_version 26
 
 Summary:        Dapper Linux release files
 Name:           dapper-release
 Version:        26
-Release:        1
+Release:        2
 License:        MIT
 Group:	        System Environment/Base
 Source0:        %{name}-%{version}.tar.xz
@@ -71,6 +70,9 @@ Requires:       cockpit-ws
 Requires:       openssh-server
 Requires:       rolekit
 Requires(post):	systemd
+# Replace Fedora's packages
+Provides:		fedora-release-server
+Obsoletes:		fedora-release-server
 
 %description server
 Provides a base package for Dapper Linux Server-specific configuration files to
@@ -156,9 +158,9 @@ install -d -m 755 %{buildroot}%{_rpmconfigdir}/macros.d
 cat >> %{buildroot}%{_rpmconfigdir}/macros.d/macros.dist << EOF
 # dist macros.
 
-%%fedora		%{dist_version}
-%%dist		.fc%{dist_version}
-%%fc%{dist_version}		1
+%%fedora		%{version}
+%%dist		.fc%{version}
+%%fc%{version}		1
 EOF
 
 # Add presets
