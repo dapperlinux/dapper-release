@@ -1,9 +1,9 @@
-%global release_name Penguin
+%global release_name Parrot
 
 Summary:        Dapper Linux release files
 Name:           dapper-release
-Version:        26
-Release:        2
+Version:        27
+Release:        1
 License:        MIT
 Group:	        System Environment/Base
 Source0:        %{name}-%{version}.tar.xz
@@ -222,6 +222,9 @@ rm -rf %{buildroot}
 %doc README.Dapper-Release-Notes
 
 %changelog
+* Fri Aug 17 2017 Matthew Ruffell <msr50@uclive.ac.nz> - 27-1
+- Dapper Linux 27
+
 * Fri Aug 11 2017 Matthew Ruffell <msr50@uclive.ac.nz> - 26-1
 - Dapper Linux 26
 

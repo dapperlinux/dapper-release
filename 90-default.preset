@@ -214,6 +214,7 @@ enable switcheroo-control.service
 enable drbdlinksclean.service
 
 # Enable the System Security Services Daemon
+# https://bugzilla.redhat.com/show_bug.cgi?id=1427649
 enable sssd.service
 
 # Enable ostree-remount on ostree-based systems
@@ -221,3 +222,23 @@ enable sssd.service
 # https://bugzilla.redhat.com/show_bug.cgi?id=1451458
 enable ostree-remount.service
 
+# Enable Performance Co-Pilot services
+# https://bugzilla.redhat.com/show_bug.cgi?id=1472350
+enable pmcd.service
+enable pmlogger.service
+enable pmie.service
+
+# Enable SSSD Kerberos Credential Cache Server
+# https://bugzilla.redhat.com/show_bug.cgi?id=1475999
+enable sssd-kcm.socket
+enable sssd-secrets.socket
+
+# A mechanism to transfer state between the initramfs and the real
+# system. Obsolete since /run was introduced, but still used by some
+# services.
+# https://bugzilla.redhat.com/show_bug.cgi?id=1493479
+enable fedora-import-state.service
+
+# An initscripts mechanism for readonly root
+# https://bugzilla.redhat.com/show_bug.cgi?id=1493479
+enable fedora-readonly.service
