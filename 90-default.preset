@@ -242,3 +242,14 @@ enable fedora-import-state.service
 # An initscripts mechanism for readonly root
 # https://bugzilla.redhat.com/show_bug.cgi?id=1493479
 enable fedora-readonly.service
+ 
+# Ensure that any installed kmods are built for the currently-running
+# kernel at boot
+# https://bugzilla.redhat.com/show_bug.cgi?id=1518258
+enable akmods.service
+
+# virtualbox-guest-additions service, yet another virtual-machine guest
+# integration agent, this is a locally-running service, Note this has a
+# "ConditionVirtualization=|oracle" so it will only run under VirtualBox
+# https://bugzilla.redhat.com/show_bug.cgi?id=1534595
+enable vboxservice.service

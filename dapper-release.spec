@@ -1,8 +1,8 @@
-%global release_name Parrot
+%global release_name Pademelon
 
 Summary:        Dapper Linux release files
 Name:           dapper-release
-Version:        27
+Version:        28
 Release:        1
 License:        MIT
 Group:	        System Environment/Base
@@ -98,6 +98,7 @@ VERSION="%{version} (%{release_name})"
 ID=dapper
 ID_LIKE=fedora
 VERSION_ID=%{version}
+PLATFORM_ID="platform:f%{version}"
 PRETTY_NAME="Dapper Linux %{version} (%{release_name})"
 ANSI_COLOR="0;34"
 CPE_NAME="cpe:/o:dapperlinux:dapperlinux:%{version}"
@@ -113,6 +114,7 @@ VERSION="%{version} (%{release_name})"
 ID=dapper
 ID_LIKE=fedora
 VERSION_ID=%{version}
+PLATFORM_ID="platform:f%{version}"
 PRETTY_NAME="Dapper Linux %{version} (%{release_name})"
 ANSI_COLOR="0;34"
 CPE_NAME="cpe:/o:dapperlinux:dapperlinux:%{version}"
@@ -159,7 +161,7 @@ cat >> %{buildroot}%{_rpmconfigdir}/macros.d/macros.dist << EOF
 # dist macros.
 
 %%fedora		%{version}
-%%dist		.fc%{version}
+%%dist		%{?distprefix}.fc%{version}
 %%fc%{version}		1
 EOF
 
@@ -180,6 +182,10 @@ install -m 0644 80-server.preset $RPM_BUILD_ROOT%{_prefix}/lib/systemd/system-pr
 install -m 0644 80-workstation.preset $RPM_BUILD_ROOT%{_prefix}/lib/os.release.d/presets/
 install -m 0644 80-workstation.preset $RPM_BUILD_ROOT%{_prefix}/lib/systemd/system-preset/
 
+# Install Polkit Rules
+mkdir -p $RPM_BUILD_ROOT%{_datadir}/polkit-1/rules.d/
+install -m 0644 org.projectatomic.rpmostree1.rules $RPM_BUILD_ROOT%{_datadir}/polkit-1/rules.d/
+
 %clean
 rm -rf %{buildroot}
 
@@ -188,16 +194,16 @@ rm -rf %{buildroot}
 %license LICENSE README.license
 %dir /usr/lib/os.release.d
 %dir /usr/lib/os.release.d/presets
-%config %attr(0644,root,root) /usr/lib/os.release.d/os-release-fedora
-%config %attr(0644,root,root) /usr/lib/os-release
+%attr(0644,root,root) /usr/lib/os.release.d/os-release-fedora
+%attr(0644,root,root) /usr/lib/os-release
 /etc/os-release
-%config %attr(0644,root,root) /etc/fedora-release
+%attr(0644,root,root) /etc/fedora-release
 /etc/redhat-release
 /etc/system-release
 %config %attr(0644,root,root) /etc/system-release-cpe
-%config %attr(0644,root,root) /usr/lib/os.release.d/issue-fedora
+%attr(0644,root,root) /usr/lib/os.release.d/issue-fedora
 %config(noreplace) /etc/issue
-%config %attr(0644,root,root) /usr/lib/issue.net
+%attr(0644,root,root) /usr/lib/issue.net
 %config(noreplace) /etc/issue.net
 %attr(0644,root,root) %{_rpmconfigdir}/macros.d/macros.dist
 %dir /usr/lib/systemd/user-preset/
@@ -207,21 +213,29 @@ rm -rf %{buildroot}
 %{_prefix}/lib/systemd/system-preset/99-default-disable.preset
 
 %files workstation
-%config %attr(0644,root,root) /usr/lib/os.release.d/os-release-workstation
+%attr(0644,root,root) /usr/lib/os.release.d/os-release-workstation
 %{_prefix}/lib/systemd/system-preset/80-workstation.preset
-%config %attr(0644,root,root) /usr/lib/os.release.d/presets/80-workstation.preset
+%attr(0644,root,root) /usr/lib/os.release.d/presets/80-workstation.preset
+%attr(0644,root,root) /usr/share/polkit-1/rules.d/org.projectatomic.rpmostree1.rules
 
 %files server
-%config %attr(0644,root,root) /usr/lib/os.release.d/os-release-server
-%config %attr(0644,root,root) /usr/lib/os.release.d/issue-server
+%attr(0644,root,root) /usr/lib/os.release.d/os-release-server
+%attr(0644,root,root) /usr/lib/os.release.d/issue-server
 %{_prefix}/lib/systemd/system-preset/80-server.preset
-%config %attr(0644,root,root) /usr/lib/os.release.d/presets/80-server.preset
+%attr(0644,root,root) /usr/lib/os.release.d/presets/80-server.preset
 
 %files notes
 %defattr(-,root,root,-)
 %doc README.Dapper-Release-Notes
 
 %changelog
+* Sat May  5 2018 Matthew Ruffell <msr50@uclive.ac.nz> - 28-1
+- Dapper Linux 28
+- Enable the virtualbox-guest-additions service (vboxservice.service)
+- Add PLATFORM_ID to /etc/os-release
+- Add polkit rules to let gnome-software update Atomic Workstation
+- Drop %%config from files in /usr
+
 * Fri Aug 17 2017 Matthew Ruffell <msr50@uclive.ac.nz> - 27-1
 - Dapper Linux 27
 
