@@ -12,6 +12,8 @@ disable systemd-resolved.service
 
 # System stuff
 # https://fedoraproject.org/w/index.php?title=Starting_services_by_default&oldid=377748
+enable dbus.socket
+enable dbus-daemon.service
 enable sshd.service
 
 # Locally-running services
@@ -231,17 +233,22 @@ enable pmie.service
 # Enable SSSD Kerberos Credential Cache Server
 # https://bugzilla.redhat.com/show_bug.cgi?id=1475999
 enable sssd-kcm.socket
-enable sssd-secrets.socket
+
+# sssd-secrets.socket was previously enabled, but as of
+# SSSD 2.0 it is not longer needed
+# https://bugzilla.redhat.com/show_bug.cgi?id=1615584
 
 # A mechanism to transfer state between the initramfs and the real
 # system. Obsolete since /run was introduced, but still used by some
 # services.
 # https://bugzilla.redhat.com/show_bug.cgi?id=1493479
-enable fedora-import-state.service
+# https://bugzilla.redhat.com/show_bug.cgi?id=1584645
+enable import-state.service 
 
 # An initscripts mechanism for readonly root
 # https://bugzilla.redhat.com/show_bug.cgi?id=1493479
-enable fedora-readonly.service
+# https://bugzilla.redhat.com/show_bug.cgi?id=1584645
+enable readonly-root.service 
  
 # Ensure that any installed kmods are built for the currently-running
 # kernel at boot
@@ -253,3 +260,20 @@ enable akmods.service
 # "ConditionVirtualization=|oracle" so it will only run under VirtualBox
 # https://bugzilla.redhat.com/show_bug.cgi?id=1534595
 enable vboxservice.service
+
+# Mark the system for SELinux autorelabel when appropriate
+# https://bugzilla.redhat.com/show_bug.cgi?id=1589720
+enable selinux-autorelabel-mark.service 
+ 
+# https://bugzilla.redhat.com/show_bug.cgi?id=1623901
+enable cpi.service
+ 
+# Initialize persistent devices on s390x
+enable device_cio_free.service
+ 
+# Enable the stratis daemon for managing stratis storage
+enable stratisd.service
+
+# Enable a service to finalize staged OSTree changes at shutdown
+# https://bugzilla.redhat.com/show_bug.cgi?id=1639372
+enable ostree-finalize-staged.path
